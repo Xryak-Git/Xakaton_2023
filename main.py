@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import vk_api
 import selenium
 import pprint
+import json
 
 from config import VK_LOGIN, VK_PASSWORD
 
@@ -22,6 +23,7 @@ class AbstractParser(ABC):
         ...
 
 
+
 class VkParser(AbstractParser):
     def __init__(self, login, password):
         vk_session = vk_api.VkApi(login=VK_LOGIN, password=VK_PASSWORD, app_id=2685278)
@@ -37,8 +39,10 @@ class VkParser(AbstractParser):
         self._check_if_user_exists(vk_id=vk_id)
 
         groups_ids = self._parse_one_person_groups(vk_id=vk_id)
-        response = self._get_groups_description(groups_ids)
-        # pprint.pprint(response)
+        groups_discription = self._get_groups_description(groups_ids)
+
+        return groups_discription
+
 
     def _parse_one_person_groups(self, vk_id):
         response = self.vk.groups.get(user_id=vk_id)
@@ -47,7 +51,6 @@ class VkParser(AbstractParser):
 
     def _get_groups_description(self, groups_ids: []):
         response = self.vk.groups.getById(group_ids=groups_ids, fields="name, description")
-        print(response)
         groups_description = {}
         for group in response:
             id = group["id"]
