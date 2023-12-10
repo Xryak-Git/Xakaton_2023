@@ -3,11 +3,12 @@ import vk_api
 import selenium
 import pprint
 import json
+import sqlite3
 
 from config import VK_LOGIN, VK_PASSWORD
 
 MY_VK_ID = "56757868"
-
+OUTPUT_PATH = r"../output/"
 
 class AuthException(Exception):
     pass
@@ -21,6 +22,14 @@ class AbstractParser(ABC):
     @abstractmethod
     def parse_one(self, *args, **kwargs):
         ...
+
+
+class Writer:
+    @staticmethod
+    def json(data: dict, file_path="groups_discription.txt"):
+        with open(OUTPUT_PATH+file_path, 'a', encoding='utf8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
 
 
 
@@ -41,8 +50,7 @@ class VkParser(AbstractParser):
         groups_ids = self._parse_one_person_groups(vk_id=vk_id)
         groups_discription = self._get_groups_description(groups_ids)
 
-        return groups_discription
-
+        return {vk_id: groups_discription}
 
     def _parse_one_person_groups(self, vk_id):
         response = self.vk.groups.get(user_id=vk_id)
@@ -68,7 +76,9 @@ class VkParser(AbstractParser):
 
 def main():
     vk_parser = VkParser(login=VK_LOGIN, password=VK_PASSWORD)
-    vk_parser.parse_one(vk_id=MY_VK_ID)
+    data = vk_parser.parse_one(vk_id=MY_VK_ID)
+
+    Writer.json(data=data)
 
 
 if __name__ == "__main__":
